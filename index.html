@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Hadith</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="max-w-2xl w-full bg-white rounded-lg shadow-md p-8">
+        <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">Daily Hadith</h1>
+        <div id="hadith-container" class="mb-6">
+            <p id="arabic-text" class="text-xl text-right mb-4 text-gray-800 line-clamp-3"></p>
+            <p id="english-text" class="text-lg mb-4 text-gray-700 line-clamp-3"></p>
+            <p id="urdu-text" class="text-lg text-right mb-4 text-gray-700 line-clamp-3"></p>
+        </div>
+        <button id="regenerate-btn" class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition duration-300 mb-4">Regenerate Hadith</button>
+        <div class="mb-4">
+            <input type="email" id="email-input" placeholder="Enter your email" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <button id="subscribe-btn" class="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600 transition duration-300">Subscribe to Weekly Hadiths</button>
+    </div>
+
+    <script>
+        const arabicText = document.getElementById('arabic-text');
+        const englishText = document.getElementById('english-text');
+        const urduText = document.getElementById('urdu-text');
+        const regenerateBtn = document.getElementById('regenerate-btn');
+        const emailInput = document.getElementById('email-input');
+        const subscribeBtn = document.getElementById('subscribe-btn');
+
+        async function fetchHadith() {
+            try {
+                const response = await fetch('/.netlify/functions/fetchHadith');
+                const data = await response.json();
+                
+                const hadith = data.hadith[0];
+                
+                // Check if the hadith is short (you can adjust the condition as needed)
+                if (hadith.body.length <= 300) {
+                    arabicText.textContent = hadith.body;
+                    englishText.textContent = hadith.translation;
+                    urduText.textContent = hadith.urdu || 'Urdu translation not available';
+                } else {
+                    // If the hadith is too long, fetch another one
+                    fetchHadith();
+                }
+            } catch (error) {
+                console.error('Error fetching hadith:', error);
+                arabicText.textContent = 'Failed to fetch hadith. Please try again.';
+                englishText.textContent = '';
+                urduText.textContent = '';
+            }
+        }
+
+        regenerateBtn.addEventListener('click', fetchHadith);
+
+        subscribeBtn.addEventListener('click', () => {
+            const email = emailInput.value.trim();
+            if (email) {
+                alert(`Subscribed with email: ${email}`);
+                emailInput.value = '';
+            } else {
+                alert('Please enter a valid email address.');
+            }
+        });
+
+        fetchHadith();
+    </script>
+</body>
+</html>
