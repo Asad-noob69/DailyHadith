@@ -6,7 +6,7 @@
     <title>Daily Hadith</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+<body class="min-h-screen flex items-center justify-center bg-cover bg-center" style="background-image: url('bgforhadith.jpeg');">
     <div class="max-w-2xl w-full bg-white rounded-lg shadow-md p-8">
         <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">Daily Hadith</h1>
         <div id="hadith-container" class="mb-6">
@@ -22,50 +22,51 @@
     </div>
 
     <script>
-        const arabicText = document.getElementById('arabic-text');
-        const englishText = document.getElementById('english-text');
-        const urduText = document.getElementById('urdu-text');
-        const regenerateBtn = document.getElementById('regenerate-btn');
-        const emailInput = document.getElementById('email-input');
-        const subscribeBtn = document.getElementById('subscribe-btn');
+  const arabicText = document.getElementById('arabic-text');
+const englishText = document.getElementById('english-text');
+const urduText = document.getElementById('urdu-text');
+const regenerateBtn = document.getElementById('regenerate-btn');
+const emailInput = document.getElementById('email-input');
+const subscribeBtn = document.getElementById('subscribe-btn');
 
-        async function fetchHadith() {
-            try {
-                const response = await fetch('/.netlify/functions/fetchHadith');
-                const data = await response.json();
-                
-                const hadith = data.hadith[0];
-                
-                // Check if the hadith is short (you can adjust the condition as needed)
-                if (hadith.body.length <= 300) {
-                    arabicText.textContent = hadith.body;
-                    englishText.textContent = hadith.translation;
-                    urduText.textContent = hadith.urdu || 'Urdu translation not available';
-                } else {
-                    // If the hadith is too long, fetch another one
-                    fetchHadith();
-                }
-            } catch (error) {
-                console.error('Error fetching hadith:', error);
-                arabicText.textContent = 'Failed to fetch hadith. Please try again.';
-                englishText.textContent = '';
-                urduText.textContent = '';
-            }
+async function fetchHadith() {
+    try {
+        const response = await fetch('/.netlify/functions/fetchHadith');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+        const data = await response.json();
+        
+        // Check if the hadith is short (you can adjust the condition as needed)
+        if (data.english.length <= 300) {
+            arabicText.textContent = data.arabic;
+            englishText.textContent = data.english;
+            urduText.textContent = 'Urdu translation not available';
+        } else {
+            // If the hadith is too long, fetch another one
+            fetchHadith();
+        }
+    } catch (error) {
+        console.error('Error fetching hadith:', error);
+        arabicText.textContent = 'Failed to fetch hadith. Please try again.';
+        englishText.textContent = '';
+        urduText.textContent = '';
+    }
+}
 
-        regenerateBtn.addEventListener('click', fetchHadith);
+regenerateBtn.addEventListener('click', fetchHadith);
 
-        subscribeBtn.addEventListener('click', () => {
-            const email = emailInput.value.trim();
-            if (email) {
-                alert(`Subscribed with email: ${email}`);
-                emailInput.value = '';
-            } else {
-                alert('Please enter a valid email address.');
-            }
-        });
+subscribeBtn.addEventListener('click', () => {
+    const email = emailInput.value.trim();
+    if (email) {
+        alert(`Subscribed with email: ${email}`);
+        emailInput.value = '';
+    } else {
+        alert('Please enter a valid email address.');
+    }
+});
 
-        fetchHadith();
+fetchHadith();
     </script>
 </body>
 </html>
